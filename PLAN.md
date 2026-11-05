@@ -145,7 +145,8 @@ src/
 ```sql
 CREATE TABLE IF NOT EXISTS profile (id INTEGER PRIMARY KEY CHECK (id = 1), json TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS messages (
-  id TEXT PRIMARY KEY, role TEXT NOT NULL CHECK (role IN ('user','assistant')),
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,                            -- stable ordering
+  id TEXT NOT NULL UNIQUE, role TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content TEXT NOT NULL, tools TEXT NOT NULL DEFAULT '[]',          -- [{name, arg, found}] for badges
   status TEXT NOT NULL DEFAULT 'complete',                          -- complete | interrupted | error
   created_at TEXT NOT NULL);
