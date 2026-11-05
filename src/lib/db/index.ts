@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS messages (
 export function openDb(file: string): Db {
   if (file !== ":memory:") mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
+  // Wait for brief locks instead of failing immediately with SQLITE_BUSY.
+  db.exec("PRAGMA busy_timeout = 5000;");
   if (file !== ":memory:") db.exec("PRAGMA journal_mode = WAL;");
   db.exec(SCHEMA);
   return db;
@@ -44,6 +46,12 @@ export function getDb(): Db {
 
 /** Runs fn inside a write transaction, rolling back if it throws. */
 export function transaction<T>(db: Db, fn: () => T): T {
+  // All DB work is synchronous, so a transaction that's already open here was leaked
+  // by an earlier failure. Roll it back rather than failing every later write.
+  if (db.isTransaction) {
+    console.warn("[db] rolling back a leftover open transaction");
+    db.exec("ROLLBACK");
+  }
   db.exec("BEGIN IMMEDIATE");
   try {
     const result = fn();

@@ -21,7 +21,7 @@ The user can reject (remove) any profile item from the UI. All other editing hap
 | Styling | Tailwind CSS v4 | Tokens in `globals.css` `@theme` (no tailwind.config) |
 | Validation | Zod 4 | `z.toJSONSchema` generates LLM tool schemas |
 | DB | `node:sqlite` (built-in) | File at `data/app.db`, auto-created, gitignored |
-| LLM | `@google/genai`, Gemini Flash (free tier) | Model ID from `GEMINI_MODEL`, default `gemini-3.8-flash` |
+| LLM | `@google/genai`, Gemini Flash (free tier) | Model ID from `GEMINI_MODEL`, default `gemini-3.6-flash`, with automatic fallback to `gemini-3.5-flash-lite` and `gemini-3.1-flash-lite` |
 | Tests | Vitest | Pure-logic unit tests only. `vite` comes in automatically as a peer dependency of vitest |
 | Fonts | `next/font/google` (IBM Plex Sans/Mono) | Built into Next, no extra library |
 
@@ -118,24 +118,25 @@ Lookup: names are normalized (lowercase, accents removed, punctuation and traili
 ```
 src/
   app/
-    layout.tsx, globals.css
-    page.tsx              server component: reads profile + messages from SQLite, computes opening message
+    layout.tsx, globals.css (theme tokens)
+    page.tsx              server component: reads profile + messages from SQLite, computes the opening message
     loading.tsx           skeleton (mock "Loading" state)
     api/chat/route.ts     POST, responds with an SSE stream
     api/profile/route.ts  POST { ops } for UI rejections, returns profile
   components/
-    ui/        Button, IconButton, Chip, TextArea, Spinner, Skeleton, ProgressBar, Toast, Alert
-    chat/      ChatPanel, MessageList, MessageItem, ToolBadge, Composer
-    profile/   ProfilePanel, ProfileSection, ProfileField, PlaceChip, Legend
+    ui/        Button, IconButton, Chip, icons, feedback (Spinner, Skeleton, ProgressBar, Alert, Toast), cx
+    chat/      ChatPanel, MessageItem (+ ToolBadge), Composer
+    profile/   ProfilePanel (sections, rows, chips)
     AppHeader.tsx, ProfileBuilderApp.tsx (client root: wires hooks into panels)
   hooks/
-    useChat.ts        messages, send/stop/retry, streaming status, error; parses the SSE stream
-    useProfile.ts     profile state, applies SSE profile events, reject() calling /api/profile
-    useToast.ts
+    useChat.ts        messages, send/stop/retry, streaming status, errors; parses the SSE stream
+    useProfile.ts     profile state, applies server snapshots, optimistic reject() via /api/profile
+    useToast.ts, useAutoScroll.ts
   lib/
-    profile/   schema.ts, ops.ts (op schemas), reducer.ts (applyOps), completeness.ts, format.ts
-    destinations/  data.ts, getDestinationInfo.ts
-    llm/       client.ts, tools.ts, systemPrompt.ts, runAgent.ts (tool loop as an async generator of events)
+    chat/types.ts    shared message, event and request types
+    profile/   schema.ts, paths.ts, ops.ts, reducer.ts (applyOps), completeness.ts, format.ts
+    destinations/  types.ts, data.ts, getDestinationInfo.ts
+    llm/       client.ts, gemini.ts, tools.ts, systemPrompt.ts, runAgent.ts (tool loop, async generator), errors.ts
     sse/       encode.ts (server), parse.ts (client)
     db/        index.ts (node:sqlite, creates schema), profileRepo.ts, messageRepo.ts
     opening.ts       blank / incomplete / complete opening text
@@ -244,7 +245,7 @@ States: loading skeleton, default (blank), chat in progress (streaming cursor, t
 The LLM is not tested. A fake event stream can drive `useChat` logic if time allows.
 
 ## 9. Build order (with cut line)
-1. Scaffold, git, PLAN (done)
+1-10. All steps done (see git history)
 2. Schema, ops, reducer, completeness + tests
 3. Destinations data + lookup + tests
 4. DB layer + repos

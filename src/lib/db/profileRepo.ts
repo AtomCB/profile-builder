@@ -29,6 +29,11 @@ export function saveProfile(profile: UserProfile, db: Db = getDb()): void {
   ).run(JSON.stringify(valid), valid.updatedAt);
 }
 
+/** Deletes the stored profile (the next load returns an empty one). */
+export function resetProfile(db: Db = getDb()): void {
+  db.prepare("DELETE FROM profile").run();
+}
+
 /** Loads, applies ops and saves (only if something changed) in one transaction. */
 export function applyProfileOps(ops: readonly ProfileOp[], db: Db = getDb()): ApplyResult {
   return transaction(db, () => {

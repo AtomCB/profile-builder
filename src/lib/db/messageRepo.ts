@@ -1,26 +1,14 @@
 import { z } from "zod";
+import {
+  toolEventSchema,
+  type ChatMessage,
+  type MessageRole,
+  type MessageStatus,
+  type ToolEvent,
+} from "@/lib/chat/types";
 import { getDb, type Db } from "./index";
 
-export const toolEventSchema = z.object({
-  name: z.enum(["getDestinationInfo", "updateProfile"]),
-  /** For getDestinationInfo: the place name asked about. */
-  arg: z.string().optional(),
-  /** For getDestinationInfo: whether the destination was known. */
-  found: z.boolean().optional(),
-});
-
-export type ToolEvent = z.infer<typeof toolEventSchema>;
-export type MessageRole = "user" | "assistant";
-export type MessageStatus = "complete" | "interrupted" | "error";
-
-export interface ChatMessage {
-  id: string;
-  role: MessageRole;
-  content: string;
-  tools: ToolEvent[];
-  status: MessageStatus;
-  createdAt: string;
-}
+export type { ChatMessage, MessageRole, MessageStatus, ToolEvent };
 
 export interface NewMessage {
   role: MessageRole;
@@ -97,6 +85,11 @@ export function listRecentMessages(count: number, db: Db = getDb()): ChatMessage
 export function getLastMessage(db: Db = getDb()): ChatMessage | null {
   const row = db.prepare(`SELECT ${COLUMNS} FROM messages ORDER BY seq DESC LIMIT 1`).get() as Row | undefined;
   return row ? toMessage(row) : null;
+}
+
+/** Deletes all chat history. */
+export function clearMessages(db: Db = getDb()): void {
+  db.prepare("DELETE FROM messages").run();
 }
 
 /** Used when retrying: removes the failed assistant reply being replaced. */

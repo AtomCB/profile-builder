@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openDb, transaction, type Db } from "./index";
-import { deleteMessage, getLastMessage, insertMessage, listMessages, listRecentMessages } from "./messageRepo";
-import { applyProfileOps, loadProfile, saveProfile } from "./profileRepo";
+import {
+  clearMessages,
+  deleteMessage,
+  getLastMessage,
+  insertMessage,
+  listMessages,
+  listRecentMessages,
+} from "./messageRepo";
+import { applyProfileOps, loadProfile, resetProfile, saveProfile } from "./profileRepo";
 
 let db: Db;
 beforeEach(() => {
@@ -86,6 +93,31 @@ describe("messageRepo", () => {
       "INSERT INTO messages (id, role, content, tools, status, created_at) VALUES ('x', 'assistant', 'hi', 'oops', 'complete', 't')",
     ).run();
     expect(listMessages(db)[0].tools).toEqual([]);
+  });
+});
+
+describe("start over", () => {
+  it("clears messages and the profile", () => {
+    applyProfileOps([{ op: "markNone", path: "preferences.avoid" }], db);
+    insertMessage({ role: "user", content: "hi" }, db);
+    transaction(db, () => {
+      clearMessages(db);
+      resetProfile(db);
+    });
+    expect(listMessages(db)).toEqual([]);
+    expect(loadProfile(db).preferences.avoid).toBeNull();
+  });
+});
+
+describe("transaction recovery", () => {
+  it("recovers from a leaked open transaction", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    db.exec("BEGIN");
+    insertMessage({ role: "user", content: "leaked" }, db);
+    transaction(db, () => clearMessages(db));
+    expect(db.isTransaction).toBe(false);
+    expect(listMessages(db)).toEqual([]);
+    expect(warn).toHaveBeenCalled();
   });
 });
 

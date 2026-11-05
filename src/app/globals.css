@@ -1,3 +1,76 @@
 @import "tailwindcss";
 
-/* Theme tokens from mock A are added in the theming step (see PLAN.md). */
+/* Design tokens from mock A ("Ledger"). */
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-ink: #101828;
+  --color-muted: #475467;
+  --color-subtle: #5d6679;
+  --color-line: #e7e6f4;
+  --color-line-soft: #e2e1f0;
+  --color-field: #d0d5dd;
+  --color-surface: #f7f7fc;
+  --color-neutral-chip: #eeeef3;
+
+  --color-brand-900: #26215c;
+  --color-brand-700: #3e37a8;
+  --color-brand-100: #ecebfb;
+  --color-brand-on-dark: #d9d6ff;
+
+  --color-accent: #c2410c;
+  --color-accent-strong: #9a3412;
+  --color-accent-bright: #ff8a4c;
+  --color-accent-ring: #ffd3ba;
+
+  --color-constraint-bg: #ecebfb;
+  --color-constraint-fg: #2d2785;
+  --color-constraint-mark: #5b54d6;
+  --color-pref-bg: #ddf4ef;
+  --color-pref-fg: #0b5f55;
+  --color-pref-mark: #12a594;
+  --color-optional-bg: #f1e8fb;
+  --color-optional-fg: #5b2a86;
+  --color-optional-mark: #9b5de5;
+  --color-place-bg: #ffe9dc;
+  --color-place-fg: #9a3412;
+  --color-place-mark: #f07a3a;
+
+  --color-inferred-bg: #fff7e0;
+  --color-inferred-fg: #6b4100;
+  --color-inferred-border: #b7791f;
+  --color-inferred-tag: #8a5300;
+
+  --color-danger-bg: #fef3f2;
+  --color-danger-border: #fecdca;
+  --color-danger-fg: #7a271a;
+  --color-danger-title: #912018;
+
+  --animate-blink: blink 1s step-end infinite;
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    min-width: 1280px;
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-700);
+    outline-offset: 2px;
+  }
+}
