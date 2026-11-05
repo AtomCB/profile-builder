@@ -4,6 +4,7 @@ import { applyProfileOps, loadProfile } from "@/lib/db/profileRepo";
 import { toChatError } from "@/lib/llm/errors";
 import { geminiGenerate } from "@/lib/llm/gemini";
 import { runAgent } from "@/lib/llm/runAgent";
+import { describeChanges } from "@/lib/profile/changes";
 import { encodeSse } from "@/lib/sse/encode";
 
 export const runtime = "nodejs";
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
     insertMessage({ role: "user", content: message });
   }
   const history = listRecentMessages(HISTORY_LIMIT);
+  const profileBefore = loadProfile();
+  // The change summary is computed from the actual before/after profiles, never from model text.
+  const changesSoFar = () => describeChanges(profileBefore, loadProfile());
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -66,17 +70,28 @@ export async function POST(request: Request) {
             send("profile", ev.snapshot);
           }
         }
-        const saved = insertMessage({ role: "assistant", content: text.trim() || EMPTY_REPLY, tools });
+        const saved = insertMessage({
+          role: "assistant",
+          content: text.trim() || EMPTY_REPLY,
+          tools,
+          changes: changesSoFar(),
+        });
         send("done", { message: saved });
       } catch (err) {
         if (request.signal.aborted) {
-          if (text.trim() || tools.length) {
-            insertMessage({ role: "assistant", content: text.trim(), tools, status: "interrupted" });
+          if (text.trim() || tools.length || changesSoFar().length) {
+            insertMessage({ role: "assistant", content: text.trim(), tools, changes: changesSoFar(), status: "interrupted" });
           }
         } else {
           console.error("[chat] agent failed:", err instanceof Error ? `${err.name}: ${err.message}` : err);
           const error = toChatError(err);
-          const saved = insertMessage({ role: "assistant", content: text.trim(), tools, status: "error" });
+          const saved = insertMessage({
+            role: "assistant",
+            content: text.trim(),
+            tools,
+            changes: changesSoFar(),
+            status: "error",
+          });
           send("error", { ...error, message: saved });
         }
       } finally {

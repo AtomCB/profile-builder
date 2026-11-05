@@ -15,7 +15,7 @@ const PROFILE_ROWS = [
 
 export default function Loading() {
   return (
-    <div className="flex h-screen flex-col" aria-busy="true">
+    <div className="flex h-dvh min-w-[1280px] flex-col overflow-hidden" aria-busy="true">
       <AppHeader
         progress={
           <>

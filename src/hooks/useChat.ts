@@ -20,7 +20,7 @@ const NETWORK_ERROR: ChatError = {
 const OPENING_ID = "opening";
 
 function localMessage(role: ChatMessage["role"], content: string, id: string = crypto.randomUUID()): UiMessage {
-  return { id, role, content, tools: [], status: "complete", createdAt: new Date().toISOString() };
+  return { id, role, content, tools: [], changes: [], status: "complete", createdAt: new Date().toISOString() };
 }
 
 /**

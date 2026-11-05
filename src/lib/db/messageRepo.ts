@@ -6,6 +6,7 @@ import {
   type MessageStatus,
   type ToolEvent,
 } from "@/lib/chat/types";
+import { profileChangeSchema, type ProfileChange } from "@/lib/profile/changes";
 import { getDb, type Db } from "./index";
 
 export type { ChatMessage, MessageRole, MessageStatus, ToolEvent };
@@ -14,6 +15,7 @@ export interface NewMessage {
   role: MessageRole;
   content: string;
   tools?: ToolEvent[];
+  changes?: ProfileChange[];
   status?: MessageStatus;
 }
 
@@ -22,15 +24,16 @@ interface Row {
   role: MessageRole;
   content: string;
   tools: string;
+  changes: string;
   status: MessageStatus;
   created_at: string;
 }
 
-const COLUMNS = "id, role, content, tools, status, created_at";
+const COLUMNS = "id, role, content, tools, changes, status, created_at";
 
-function parseTools(json: string): ToolEvent[] {
+function parseJsonArray<T>(json: string, schema: z.ZodType<T>): T[] {
   try {
-    const parsed = z.array(toolEventSchema).safeParse(JSON.parse(json));
+    const parsed = z.array(schema).safeParse(JSON.parse(json));
     return parsed.success ? parsed.data : [];
   } catch {
     return [];
@@ -42,7 +45,8 @@ function toMessage(row: Row): ChatMessage {
     id: row.id,
     role: row.role,
     content: row.content,
-    tools: parseTools(row.tools),
+    tools: parseJsonArray(row.tools, toolEventSchema),
+    changes: parseJsonArray(row.changes, profileChangeSchema),
     status: row.status,
     createdAt: row.created_at,
   };
@@ -54,14 +58,16 @@ export function insertMessage(input: NewMessage, db: Db = getDb()): ChatMessage 
     role: input.role,
     content: input.content,
     tools: input.tools ?? [],
+    changes: input.changes ?? [],
     status: input.status ?? "complete",
     createdAt: new Date().toISOString(),
   };
-  db.prepare(`INSERT INTO messages (${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?)`).run(
+  db.prepare(`INSERT INTO messages (${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
     message.id,
     message.role,
     message.content,
     JSON.stringify(message.tools),
+    JSON.stringify(message.changes),
     message.status,
     message.createdAt,
   );

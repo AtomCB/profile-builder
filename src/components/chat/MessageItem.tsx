@@ -4,6 +4,7 @@ import { cx } from "@/components/ui/cx";
 import { Alert } from "@/components/ui/feedback";
 import { RetryIcon, SearchIcon } from "@/components/ui/icons";
 import type { ToolEvent } from "@/lib/chat/types";
+import type { ProfileChange } from "@/lib/profile/changes";
 
 export function MessageItem({ message, isLast, onRetry }: { message: UiMessage; isLast: boolean; onRetry: () => void }) {
   if (message.role === "user") {
@@ -38,6 +39,7 @@ export function MessageItem({ message, isLast, onRetry }: { message: UiMessage; 
           )}
         </div>
       )}
+      {message.changes.length > 0 && <ProfileChanges changes={message.changes} />}
       {message.status === "interrupted" && <div className="mt-1 text-[13px] text-subtle italic">Stopped.</div>}
       {message.error && (
         <Alert
@@ -60,6 +62,43 @@ export function MessageItem({ message, isLast, onRetry }: { message: UiMessage; 
           )}
         </Alert>
       )}
+    </div>
+  );
+}
+
+const CHANGE_STYLES: Record<ProfileChange["kind"], { symbol: string; word: string; className: string }> = {
+  added: { symbol: "+", word: "Added", className: "text-pref-fg" },
+  updated: { symbol: "→", word: "Updated", className: "text-brand-700" },
+  confirmed: { symbol: "✓", word: "Confirmed", className: "text-pref-fg" },
+  removed: { symbol: "−", word: "Removed", className: "text-accent-strong" },
+};
+
+/** Server-computed summary of what this turn changed in the profile. */
+export function ProfileChanges({ changes }: { changes: ProfileChange[] }) {
+  return (
+    <div className="mt-3 rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[13px]">
+      <div className="mb-1 font-mono text-[11px] tracking-[0.08em] text-muted uppercase">Profile updated</div>
+      <ul className="flex flex-col gap-0.5">
+        {changes.map((c, i) => {
+          const style = CHANGE_STYLES[c.kind];
+          return (
+            <li key={i} className="flex items-baseline gap-2">
+              <span aria-hidden="true" className={cx("w-3 font-mono font-medium", style.className)}>
+                {style.symbol}
+              </span>
+              <span>
+                <span className="sr-only">{style.word} </span>
+                <span className="text-muted">{c.field}:</span> {c.value}
+                {c.kind === "removed" && <span className="text-subtle"> (removed)</span>}
+                {c.kind === "confirmed" && <span className="text-subtle"> (confirmed)</span>}
+                {c.inferred && (
+                  <span className="ml-1.5 font-mono text-[10px] tracking-wider text-inferred-tag uppercase">inferred</span>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

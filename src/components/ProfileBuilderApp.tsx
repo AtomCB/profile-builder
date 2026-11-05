@@ -48,7 +48,7 @@ export function ProfileBuilderApp({ initialProfile, initialCompleteness, initial
   }, [show]);
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh min-w-[1280px] flex-col overflow-hidden">
       <AppHeader
         progress={<EssentialsProgress done={profile.completeness.done} total={profile.completeness.total} />}
         actions={<StartOverButton disabled={chat.status === "streaming"} onConfirm={startOver} />}

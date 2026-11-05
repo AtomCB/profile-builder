@@ -54,6 +54,17 @@ describe("list ops", () => {
     expect(profile.traveler.passports?.map((i) => i.value)).toEqual(["CA"]);
   });
 
+  it("holds several budget tiers and rejects unknown ones", () => {
+    const { profile, results } = apply(
+      empty,
+      { op: "add", path: "preferences.budgetTier", value: "midRange", source: "stated" },
+      { op: "add", path: "preferences.budgetTier", value: "luxury", source: "stated" },
+      { op: "add", path: "preferences.budgetTier", value: "cheap", source: "stated" },
+    );
+    expect(results.map((r) => r.ok)).toEqual([true, true, false]);
+    expect(profile.preferences.budgetTier?.map((i) => i.value)).toEqual(["midRange", "luxury"]);
+  });
+
   it("rejects values outside an enum list", () => {
     const { results, changed } = apply(empty, {
       op: "add",
@@ -118,9 +129,9 @@ describe("hard constraints", () => {
 
 describe("field ops", () => {
   it("validates enum fields", () => {
-    const ok = apply(empty, { op: "set", path: "preferences.budgetTier", value: "midRange", source: "inferred" });
-    expect(ok.profile.preferences.budgetTier).toEqual({ value: "midRange", source: "inferred" });
-    const bad = apply(empty, { op: "set", path: "preferences.budgetTier", value: "cheap", source: "stated" });
+    const ok = apply(empty, { op: "set", path: "preferences.pace", value: "relaxed", source: "inferred" });
+    expect(ok.profile.preferences.pace).toEqual({ value: "relaxed", source: "inferred" });
+    const bad = apply(empty, { op: "set", path: "preferences.pace", value: "chill", source: "stated" });
     expect(bad.results[0].ok).toBe(false);
   });
 
@@ -167,12 +178,12 @@ describe("rejections", () => {
   });
 
   it("reject on a field resets it to null and blocks the same inferred value", () => {
-    let { profile } = apply(empty, { op: "set", path: "preferences.budgetTier", value: "midRange", source: "inferred" });
-    ({ profile } = apply(profile, { op: "reject", path: "preferences.budgetTier" }));
-    expect(profile.preferences.budgetTier).toBeNull();
-    const again = apply(profile, { op: "set", path: "preferences.budgetTier", value: "midRange", source: "inferred" });
+    let { profile } = apply(empty, { op: "set", path: "preferences.pace", value: "packed", source: "inferred" });
+    ({ profile } = apply(profile, { op: "reject", path: "preferences.pace" }));
+    expect(profile.preferences.pace).toBeNull();
+    const again = apply(profile, { op: "set", path: "preferences.pace", value: "packed", source: "inferred" });
     expect(again.results[0].ok).toBe(false);
-    const other = apply(profile, { op: "set", path: "preferences.budgetTier", value: "luxury", source: "inferred" });
+    const other = apply(profile, { op: "set", path: "preferences.pace", value: "relaxed", source: "inferred" });
     expect(other.results[0].ok).toBe(true);
   });
 

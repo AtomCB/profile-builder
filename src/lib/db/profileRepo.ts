@@ -11,13 +11,23 @@ export function loadProfile(db: Db = getDb()): UserProfile {
   const row = db.prepare("SELECT json FROM profile WHERE id = 1").get() as { json: string } | undefined;
   if (!row) return createEmptyProfile();
   try {
-    const parsed = profileSchema.safeParse(JSON.parse(row.json));
+    const parsed = profileSchema.safeParse(upgradeStoredProfile(JSON.parse(row.json)));
     if (parsed.success) return parsed.data;
     console.warn("[profile] stored profile failed validation; starting fresh", parsed.error.issues);
   } catch (err) {
     console.warn("[profile] stored profile is not valid JSON; starting fresh", err);
   }
   return createEmptyProfile();
+}
+
+/** Converts profiles saved by earlier versions (budgetTier used to be a single value). */
+function upgradeStoredProfile(raw: unknown): unknown {
+  const prefs = (raw as { preferences?: Record<string, unknown> } | null)?.preferences;
+  const budget = prefs?.budgetTier as { value?: unknown; source?: unknown } | null | undefined;
+  if (prefs && budget && !Array.isArray(budget) && typeof budget.value === "string") {
+    prefs.budgetTier = [{ id: crypto.randomUUID(), value: budget.value, source: budget.source }];
+  }
+  return raw;
 }
 
 /** Validates and saves the profile. Throws if the profile is invalid (a bug, not user error). */

@@ -98,7 +98,8 @@ export const profileSchema = z.object({
   /** Soft preferences: may be `inferred`. */
   preferences: z.object({
     companions: list(companionSchema),
-    budgetTier: field(budgetTierSchema),
+    /** A list: users often mix tiers ("mid-range with some luxury"). */
+    budgetTier: list(budgetTierSchema),
     pace: field(paceSchema),
     travelMonths: field(z.array(monthSchema).min(1)),
     interests: list(textValueSchema),

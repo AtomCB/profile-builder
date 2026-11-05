@@ -62,7 +62,7 @@ Open http://localhost:3000 and start chatting. The layout is built for desktop b
 ### The conversation
 - The assistant asks one question at a time and aims for **9 essentials**: home base, passports, dietary restrictions, accessibility needs, travel companions, budget, travel months, pace, and at least 3 interests. The header shows your progress ("4 of 9 essentials").
 - Optional details (things to avoid, food preferences, climate, trip length, accommodation, places you've been or want to go) are recorded when they come up.
-- Replies are plain text. Whenever the assistant changes your profile, it lists the changes at the end of the reply, e.g. `+ Interests: temples (inferred)`.
+- Replies are plain text. Whenever a reply changes your profile, a **Profile updated** summary appears under it (Added, Removed, Updated, Confirmed, with an inferred tag where it applies). The app computes this summary from the profile itself, so it always matches what was actually saved.
 - While a reply is streaming, input is disabled and a **Stop** button appears. Small badges show what the assistant did, such as "Looked up Kyoto" or "Updated profile".
 - If a reply fails, an error box appears under it with **Retry**. Your profile is never lost.
 - It only discusses your travel profile and the destinations below, and will politely steer other topics (itineraries, bookings, general questions) back.
@@ -70,12 +70,13 @@ Open http://localhost:3000 and start chatting. The layout is built for desktop b
 ### Destinations and inference
 - The assistant has destination data for 5 places only: **Kyoto, Lisbon, Marrakech, Reykjavík and Cape Town**.
 - When you mention one of these, it looks it up and fills in likely preferences right away, such as interests the place is known for, a budget tier, or travel months. These appear as dashed amber chips marked **inferred**. Confirm them in chat to make them stated.
+- If a place name is ambiguous (Columbus, Portland, Cambridge, Paris...), it first asks which one you mean.
 - For any other place it will say it has no information about it, and won't guess. It still records the place in your travel history if you've been there or want to go (marked "no data"), along with anything you said explicitly.
 - Visa guidance covers US, UK, Canadian, Australian, Indian and German passports. It is illustrative only: always confirm with official government sources.
 
 ### The ledger (profile panel)
 - **Constraints (hard):** home base, passports, dietary restrictions, accessibility needs. These are only recorded from what you say, never inferred.
-- **Preferences (soft):** companions, budget, travel months, pace, interests. These may be inferred.
+- **Preferences (soft):** companions, budget, travel months, pace, interests. These may be inferred. Budget can hold more than one tier (e.g. Mid-range and Luxury).
 - **Optional:** avoid, food preferences, climate, trip length, accommodation.
 - **Places:** trips you've taken or want to take.
 - "Not asked yet" means the assistant hasn't covered a field; "None" means you said you have none.

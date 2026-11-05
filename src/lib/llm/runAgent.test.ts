@@ -12,6 +12,7 @@ const msg = (role: ChatMessage["role"], content: string, status: ChatMessage["st
   role,
   content,
   tools: [],
+  changes: [],
   status,
   createdAt: "",
 });
@@ -66,6 +67,7 @@ describe("runAgent", () => {
     ]);
     expect(requests).toHaveLength(1);
     expect(requests[0].config.systemInstruction).toContain("travel-profile interviewer");
+    expect(requests[0].config.systemInstruction).toContain("Ambiguous place names");
   });
 
   it("runs tools, saves profile changes and feeds results back", async () => {

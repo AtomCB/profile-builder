@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS messages (
   role       TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content    TEXT NOT NULL,
   tools      TEXT NOT NULL DEFAULT '[]',
+  changes    TEXT NOT NULL DEFAULT '[]',
   status     TEXT NOT NULL DEFAULT 'complete' CHECK (status IN ('complete', 'interrupted', 'error')),
   created_at TEXT NOT NULL
 );
@@ -30,7 +31,16 @@ export function openDb(file: string): Db {
   db.exec("PRAGMA busy_timeout = 5000;");
   if (file !== ":memory:") db.exec("PRAGMA journal_mode = WAL;");
   db.exec(SCHEMA);
+  migrate(db);
   return db;
+}
+
+/** Brings databases created by earlier versions up to the current schema. */
+function migrate(db: Db): void {
+  const columns = db.prepare("PRAGMA table_info(messages)").all() as { name: string }[];
+  if (!columns.some((c) => c.name === "changes")) {
+    db.exec("ALTER TABLE messages ADD COLUMN changes TEXT NOT NULL DEFAULT '[]'");
+  }
 }
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "app.db");

@@ -11,7 +11,7 @@ const essentials: ProfileOp[] = [
   { op: "markNone", path: "traveler.dietaryRestrictions" },
   { op: "markNone", path: "traveler.accessibilityNeeds" },
   { op: "set", path: "preferences.travelMonths", value: [3, 4, 5], source: "stated" },
-  { op: "set", path: "preferences.budgetTier", value: "midRange", source: "inferred" },
+  { op: "add", path: "preferences.budgetTier", value: "midRange", source: "inferred" },
   { op: "set", path: "preferences.pace", value: "balanced", source: "stated" },
   { op: "add", path: "preferences.interests", value: "hiking", source: "stated" },
   { op: "add", path: "preferences.interests", value: "food", source: "inferred" },

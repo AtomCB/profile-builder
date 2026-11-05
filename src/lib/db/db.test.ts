@@ -96,6 +96,37 @@ describe("messageRepo", () => {
   });
 });
 
+describe("upgrades", () => {
+  it("converts a stored single-value budgetTier into a list", () => {
+    const old = loadProfile(db) as unknown as { preferences: Record<string, unknown> };
+    old.preferences.budgetTier = { value: "luxury", source: "stated" };
+    db.prepare("INSERT INTO profile (id, json, updated_at) VALUES (1, ?, ?)").run(JSON.stringify(old), "x");
+    expect(loadProfile(db).preferences.budgetTier).toMatchObject([{ value: "luxury", source: "stated" }]);
+  });
+
+  it("stores and reads per-message profile changes", () => {
+    insertMessage({ role: "assistant", content: "ok", changes: [{ kind: "added", field: "Budget", value: "Luxury" }] }, db);
+    expect(listMessages(db)[0].changes).toEqual([{ kind: "added", field: "Budget", value: "Luxury" }]);
+  });
+
+  it("adds the changes column to databases created before it existed", async () => {
+    const { DatabaseSync } = await import("node:sqlite");
+    const { mkdtempSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { tmpdir } = await import("node:os");
+    const file = join(mkdtempSync(join(tmpdir(), "pb-")), "old.db");
+    const legacy = new DatabaseSync(file);
+    legacy.exec(
+      "CREATE TABLE messages (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, role TEXT NOT NULL, content TEXT NOT NULL, tools TEXT NOT NULL DEFAULT '[]', status TEXT NOT NULL DEFAULT 'complete', created_at TEXT NOT NULL)",
+    );
+    legacy.exec("INSERT INTO messages (id, role, content, created_at) VALUES ('a', 'user', 'hi', 't')");
+    legacy.close();
+    const upgraded = openDb(file);
+    expect(listMessages(upgraded)[0]).toMatchObject({ content: "hi", changes: [] });
+    upgraded.close();
+  });
+});
+
 describe("start over", () => {
   it("clears messages and the profile", () => {
     applyProfileOps([{ op: "markNone", path: "preferences.avoid" }], db);

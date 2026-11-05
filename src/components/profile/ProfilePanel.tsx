@@ -79,7 +79,7 @@ export function ProfilePanel({ profile, completeness, highlighted, onReject }: P
   const missing = new Set(completeness.missing);
 
   return (
-    <aside aria-label="Travel profile" className="w-[440px] flex-none overflow-y-auto border-l border-line bg-surface px-7 pt-3 pb-6">
+    <aside aria-label="Travel profile" className="w-[440px] flex-none overflow-y-auto overscroll-contain border-l border-line bg-surface px-7 pt-3 pb-6">
       <div className="flex items-center gap-2.5 pt-1.5 text-xs text-muted">
         <span className="inline-flex h-[22px] items-center rounded-md bg-pref-bg px-2 text-pref-fg">stated</span>
         <span className="inline-flex h-[22px] items-center rounded-md border-[1.5px] border-dashed border-inferred-border bg-inferred-bg px-2 text-inferred-fg">

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ProfileChange } from "@/lib/profile/changes";
 import type { Completeness } from "@/lib/profile/completeness";
 import type { UserProfile } from "@/lib/profile/schema";
 
@@ -19,6 +20,8 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   tools: ToolEvent[];
+  /** Profile changes made during this assistant turn, computed by the server. */
+  changes: ProfileChange[];
   status: MessageStatus;
   createdAt: string;
 }

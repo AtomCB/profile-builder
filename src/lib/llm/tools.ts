@@ -39,7 +39,7 @@ const UPDATE_PROFILE_PARAMETERS = {
           value: {
             type: "string",
             description:
-              "add/remove/confirm: the item value. set: the value for budgetTier, pace or tripLength. Passports are ISO alpha-2 codes like CA.",
+              "add/remove/confirm: the item value (budgetTier: budget, midRange or luxury). set: the value for pace or tripLength. Passports are ISO alpha-2 codes like CA.",
           },
           months: {
             type: "array",

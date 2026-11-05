@@ -60,8 +60,12 @@
   body {
     height: 100%;
   }
+  /* The page itself never scrolls vertically: the chat thread and the profile panel
+     scroll independently and the composer stays pinned. Narrow windows can still
+     scroll sideways to reach the 1280px desktop layout. */
   body {
-    min-width: 1280px;
+    overflow-x: auto;
+    overflow-y: hidden;
     background: var(--color-white);
     color: var(--color-ink);
     font-family: var(--font-sans);

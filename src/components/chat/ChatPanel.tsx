@@ -20,8 +20,8 @@ export function ChatPanel({ messages, status, onSend, onStop, onRetry }: ChatPan
   useAutoScroll(threadRef, `${messages.length}:${last?.content.length}:${last?.tools.length}`);
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col">
-      <div ref={threadRef} className="flex-1 overflow-y-auto py-8" aria-live="polite">
+    <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div ref={threadRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-8" aria-live="polite">
         <div className="mx-auto flex w-[720px] flex-col gap-5">
           {messages.map((m) => (
             <MessageItem key={m.id} message={m} isLast={m === last} onRetry={onRetry} />

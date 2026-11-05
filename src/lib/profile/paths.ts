@@ -19,6 +19,7 @@ export const LIST_PATHS = [
   "traveler.dietaryRestrictions",
   "traveler.accessibilityNeeds",
   "preferences.companions",
+  "preferences.budgetTier",
   "preferences.interests",
   "preferences.avoid",
   "preferences.dietaryPreferences",
@@ -29,7 +30,6 @@ export const LIST_PATHS = [
 /** Profile paths that hold a single value. */
 export const FIELD_PATHS = [
   "traveler.homeBase",
-  "preferences.budgetTier",
   "preferences.pace",
   "preferences.travelMonths",
   "preferences.tripLength",
@@ -108,6 +108,7 @@ export const LIST_META: Record<ListPath, ListPathMeta> = {
     textValueSchema,
   ),
   "preferences.companions": listMeta("preferences.companions", "Companions", false, companionSchema, asIs),
+  "preferences.budgetTier": listMeta("preferences.budgetTier", "Budget", false, budgetTierSchema, asIs),
   "preferences.interests": listMeta("preferences.interests", "Interests", false, textValueSchema),
   "preferences.avoid": listMeta("preferences.avoid", "Avoid", false, textValueSchema),
   "preferences.dietaryPreferences": listMeta(
@@ -147,7 +148,6 @@ export const FIELD_META: Record<FieldPath, FieldPathMeta> = {
       return normalizeKey(`${hb.city ?? ""}|${hb.country}`);
     },
   ),
-  "preferences.budgetTier": fieldMeta("preferences.budgetTier", "Budget", false, budgetTierSchema),
   "preferences.pace": fieldMeta("preferences.pace", "Pace", false, paceSchema),
   "preferences.travelMonths": fieldMeta(
     "preferences.travelMonths",

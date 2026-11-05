@@ -22,7 +22,7 @@ export const ESSENTIALS: readonly Essential[] = [
     isDone: (p) => p.traveler.accessibilityNeeds !== null,
   },
   { key: "travelMonths", label: "Travel months", isDone: (p) => p.preferences.travelMonths !== null },
-  { key: "budgetTier", label: "Budget", isDone: (p) => p.preferences.budgetTier !== null },
+  { key: "budgetTier", label: "Budget", isDone: (p) => (p.preferences.budgetTier?.length ?? 0) > 0 },
   { key: "pace", label: "Pace", isDone: (p) => p.preferences.pace !== null },
   { key: "interests", label: "Interests", isDone: (p) => (p.preferences.interests?.length ?? 0) >= 3 },
 ];
