@@ -103,6 +103,18 @@ Open http://localhost:3000 and start chatting. The layout is built for desktop b
 
 See [`PLAN.md`](./PLAN.md) for the full design (data model, agent rules, API lifecycle) and [`SPEC.md`](./SPEC.md) for the original brief.
 
+## Decisions and trade-offs
+
+- **Gemini Flash on the free tier, through `@google/genai` with a hand-written tool loop.** It's free and mainstream, and the loop is small enough to own. The trade-off is reliability: free models get overloaded, so there's an automatic retry and a fallback chain of models.
+- **Extraction happens through tool calling in the same streamed call.** The model calls `updateProfile` while it replies, so there's no second extraction call per turn. The cost is that the model has to remember to save. The prompt requires it, and the "Profile updated" summary is computed by the server from a before/after diff, so a missed or wrong save is visible instead of being described incorrectly.
+- **One validated reducer for every change.** Agent and UI changes both go through the same Zod schemas and reducer. Each change is validated on its own, so one bad change from the model doesn't sink the rest, and the error goes back to the model.
+- **The data model carries the meaning.** `null` means "not asked yet" and `[]` means "asked, none", so the agent knows what's left to ask. Travel months replace seasons, which flip between hemispheres. Hard vs. soft comes from where a field lives instead of numeric weights.
+- **Inferences save immediately with an "inferred" tag.** Asking for confirmation would cost a turn every time. Instead you can ✕ anything, rejections are remembered, and hard constraints are never inferred.
+- **Conflicts and ambiguity are handled in the prompt.** The agent asks one clarifying question instead of overwriting a field. This kept the implementation in one place, but it isn't enforced in code or covered by tests.
+- **Unknown destinations get no facts.** `getDestinationInfo` returns "not found", and the agent says it has no information. The place is still recorded in travel history, because that's about the user, not the destination.
+- **Small, boring persistence.** `node:sqlite` (no native dependency to break the 5-minute setup) with Node 24 pinned. The profile is one validated JSON row. Chat history is saved, and the last 20 messages go to the model with the profile as long-term memory.
+- **Plain-text replies and fixed opening messages.** No markdown library, and the greeting for a new, returning or complete profile needs no LLM call.
+
 ## Project structure
 ```
 src/
@@ -134,6 +146,15 @@ src/
 - the agent loop, driven by a scripted fake model so no API key is needed
 
 The LLM itself is not tested.
+
+## With another day
+
+- **Conflict and clarifying-question UI.** Buttons like "Keep vegetarian / Change it" that resolve locally, instead of a round trip through the agent.
+- **Evals for the agent.** Conflict handling, ambiguous place names and off-topic deflection are prompt rules with no automated tests. I'd add scripted conversations scored on the profile change they produce.
+- **Structured logs** for LLM and tool calls (model, latency, tokens, request IDs). Not built.
+- **Editing in the ledger.** Today the UI can only remove items; edits go through chat.
+- **A second provider** in the fallback chain, so a Gemini outage doesn't take the app down.
+- **Tests beyond pure logic**, such as the API routes and hooks.
 
 ## Troubleshooting
 
