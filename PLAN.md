@@ -101,7 +101,6 @@ interface DestinationInfo {
   climateSummary: string;
   knownFor: string[];                 // canonical interest tags
   goodFor: Companion[];
-  pace: Pace[];
   averageDailyCostUSD: { budget: number; midRange: number; luxury: number }; // per person, incl. lodging
   visa: { byPassport: Partial<Record<'US'|'GB'|'CA'|'AU'|'IN'|'DE', VisaRule>>; defaultNote: string };
   cuisine: string[];
